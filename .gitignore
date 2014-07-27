@@ -1,7 +1,7 @@
 *.sublime-*
 *~
 node_modules
-bower_components
 .sass-cache
-/repeats-sketch.ep
-app/js/bundle.js
+src/calendar.js
+src/style.css
+.python-version
