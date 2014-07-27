@@ -1,0 +1,22 @@
+{
+  "name": "space-calendar",
+  "version": "0.0.1",
+  "description": "Calendar element experiment with space-pen",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^2.1.1",
+    "moment-jalaali": "^0.2.3",
+    "space-pen": "^3.3.0",
+    "underscore": "^1.6.0"
+  },
+  "devDependencies": {
+    "browserify": "^5.0.7",
+    "coffee-script": "^1.7.1",
+    "coffeeify": "^0.7.0"
+  }
+}
