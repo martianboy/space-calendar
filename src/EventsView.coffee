@@ -21,104 +21,82 @@ module.exports = class MonthEventsView extends View
 
 			classes.join(' ')
 
-		getEventChunks = (ev) ->
+		consoleTableEvents = (events) ->
+			console.table _.map events, (ev) ->
+				title: ev.title
+				start: ev.start.format 'ddd, LL'
+				end: ev.end.format 'ddd, LL'
+
+			return
+
+		toCoordinateGrid = (ev) ->
 			startCol = ev.start.weekday()
 			startRow = Math.floor(ev.start.diff(ev.start.clone().startOf('month').startOf('week'), 'days') / 7)
 			span = ev.end.diff(ev.start, 'days')
 			endCol = (7 + ev.end.weekday() - 1) % 7
 			chunksCount = Math.floor((startCol + span - 1) / 7) + 1
 
-			# console.table [
-			# 	title: ev.title
-			# 	start: ev.start.format 'ddd, LL'
-			# 	end: ev.end.format 'ddd, LL'
-			# 	startCol: startCol
-			# 	endCol: endCol
-			# 	span: span
-			# 	chunksCount: chunksCount
-			# ]
+			chunks = []
 
-			if chunksCount == 1
-				chunks = [
+			while span > 0
+				chunks.push
 					left: startCol
-					right: endCol
-					row: startRow
-					ev: ev
-					beginning: true
-					end: true
-				]
-			else
-				chunks = [
-					left: startCol
-					right: 6
+					right: if span < 7 then Math.min(6, endCol) else 6
 					row: startRow++
-					ev: ev
-					beginning: true
-					end: false
-				]
-				i = 1
-				while i++ < chunksCount - 1
-					chunks.push(
-						left: 0
-						right: 6
-						row: startRow++
-						ev: ev
-						beginning: false
-						end: false
-					)
-				chunks.push(
-					left: 0
-					right: endCol
-					row: startRow
-					ev: ev
-					beginning: false
-					end: true
-				)
+					title: ev.title
 
-		 	chunks
+				span -= 7 - startCol
+				startCol = 0
 
-		transformIntoRows = (chunks) ->
-			checkOverlap = (chunk1, chunk2) ->
-				return if chunk2.left > chunk1.left then chunk1.right >= chunk2.left else chunk2.right >= chunk1.left
+			_.first(chunks).beginning = true
+			_.last(chunks).end = true
 
-			overlapsWith = (chunk) ->
-				return checkOverlap.bind(null, chunk)
+			chunks
 
-			fixChunkOffset = (offset, chunk) ->
-				chunk.offset = chunk.left - offset + 1
-				offset + chunk.right - chunk.left + 1
+		checkOverlap = (chunk1, chunk2) ->
+			return if chunk2.left > chunk1.left then chunk1.right >= chunk2.left else chunk2.right >= chunk1.left
 
-			rows = _.groupBy(chunks, 'row')
+		overlapsWith = (chunk) ->
+			return checkOverlap.bind(null, chunk)
 
-			_.map rows, (row) ->
-				subrows = []
+		fixChunkOffset = (offset, chunk) ->
+			chunk.offset = chunk.left - offset + 1
+			offset + chunk.right - chunk.left + 1
 
-				while row.length > 0
-					chunk = _.first(row)
-					[row, nonOverlappingChunks] = _.partition(_.without(row, chunk), overlapsWith(chunk))
-					subrow = [chunk].concat(nonOverlappingChunks)
+		toSubrows = (row) ->
+			subrows = []
 
-					_.reduce subrow, fixChunkOffset, 0
+			while row.length > 0
+				chunk = _.first(row)
+				[row, nonOverlappingChunks] = _.partition(_.without(row, chunk), overlapsWith(chunk))
+				subrow = [chunk].concat(nonOverlappingChunks)
 
-					subrows.push(subrow)
+				_.reduce subrow, fixChunkOffset, 0
 
-				subrows
+				subrows.push(subrow)
 
-		chunks = _.chain(events)
-			.map getEventChunks
-			.flatten true
-			.value()
+			subrows
 
-		rows = transformIntoRows(chunks)
+		renderRow = (subrows) ->
+			@ol class: 'sc-row-' + subrows[0][0].row, =>
+				_.map subrows, renderSubrow.bind(this)
+
+		renderSubrow = (subrow) ->
+			@li =>
+				_.map subrow, renderChunk.bind(this)
+
+		renderChunk = (chunk) ->
+			@div class: chunkClass(chunk), draggable: true, =>
+				@text chunk.title
 
 		@append $$ ->
-			_.map rows, (subrows) =>
-				@ol class: 'sc-row-' + subrows[0][0].row, =>
-					_.map subrows, (subrow) =>
-						@li =>
-							_.map subrow, (chunk) =>
-								@div class: chunkClass(chunk), draggable: true, =>
-									@text chunk.ev.title
+			_.chain(events)
+				.map toCoordinateGrid
+				.flatten true
+				.groupBy 'row'
+				.map toSubrows
+				.map renderRow.bind(this)
+				.value()
 
 	afterAttach: (onDom) ->
 		dragStart = (e) ->
