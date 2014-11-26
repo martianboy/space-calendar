@@ -1,8 +1,8 @@
 {View} = require 'space-pen'
 moment = require 'moment-jalaali'
 
-MonthView = require './MonthView'
-EventsView = require './EventsView'
+MonthView = require './MonthView.coffee'
+EventsView = require './EventsView.coffee'
 
 eventSource = [
 	title: 'Gholi'

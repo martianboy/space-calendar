@@ -1,5 +1,5 @@
 {View, $, $$} = require 'space-pen'
-{isThenable} = require './utils'
+{isThenable} = require './utils.coffee'
 _ = require 'underscore'
 
 module.exports = class MonthEventsView extends View

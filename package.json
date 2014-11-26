@@ -9,14 +9,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jquery": "^2.1.1",
-    "moment-jalaali": "^0.2.3",
-    "space-pen": "^3.3.0",
-    "underscore": "^1.6.0"
+    "jquery": "2.x",
+    "moment-jalaali": "*",
+    "space-pen": "3.x",
+    "underscore": "*"
   },
   "devDependencies": {
-    "browserify": "^5.0.7",
-    "coffee-script": "^1.7.1",
-    "coffeeify": "^0.7.0"
+    "browserify": "6.x",
+    "coffee-script": "*",
+    "coffeeify": "*"
   }
 }
